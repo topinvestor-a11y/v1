@@ -101,8 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const analyzeBtn = document.getElementById('analyze-btn');
     const lottoBoard = document.querySelector('lotto-board');
-    const oddEvenChart = document.getElementById('odd-even-chart');
-    const sumRangeChart = document.getElementById('sum-range-chart');
     const probabilityValue = document.getElementById('probability-value');
     const historyList = document.getElementById('history-list');
     const historyPanel = document.getElementById('history-panel');
@@ -131,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function generateWeightedLottoNumbers() {
         const weightedList = [];
         for (const num in numberFrequencies) {
-            // The weight is the frequency of the number
             const weight = numberFrequencies[num];
             for (let i = 0; i < weight; i++) {
                 weightedList.push(parseInt(num));
@@ -147,20 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return Array.from(selectedNumbers).sort((a, b) => a - b);
     }
 
-    /**
-     * Updates the mini-charts with analysis results.
-     * @param {number[]} numbers - The array of generated lotto numbers.
-     */
-    function updateAnalysis(numbers) {
-        // Odd/Even analysis
-        const oddCount = numbers.filter(n => n % 2 !== 0).length;
-        oddEvenChart.textContent = `홀 ${oddCount} : 짝 ${6 - oddCount}`;
-
-        // Sum analysis
-        const sum = numbers.reduce((acc, n) => acc + n, 0);
-        sumRangeChart.textContent = `총합 ${sum}`;
-    }
-
     // --- Event Listeners ---
 
     analyzeBtn.addEventListener('click', () => {
@@ -171,12 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             const numbers = generateWeightedLottoNumbers();
             lottoBoard.displayNumbers(numbers);
-            updateAnalysis(numbers);
             saveToHistory(numbers);
 
             analyzeBtn.disabled = false;
-            analyzeBtn.querySelector('.btn-text').textContent = '최적의 번호 조합 추출';
-        }, 1000); // Simulate analysis time
+            analyzeBtn.querySelector('.btn-text').textContent = '⚡ 최적의 번호 조합 추출';
+        }, 500); // Simulate analysis time
     });
 
     showHistoryBtn.addEventListener('click', () => {
