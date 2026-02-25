@@ -1,21 +1,28 @@
-class LottoDisplay extends HTMLElement {
+import { winningNumbersData } from './data.js';
+
+/**
+ * Lotto Board Web Component
+ * Displays the generated lottery numbers with animations.
+ */
+class LottoBoard extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.innerHTML = `
             <style>
                 :host {
-                    display: block;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
                     min-height: 80px;
                 }
                 .lotto-numbers {
                     display: flex;
                     justify-content: center;
                     gap: 12px;
-                    margin-top: 20px;
                     flex-wrap: wrap;
                 }
-                .lotto-number {
+                .ball {
                     width: 56px;
                     height: 56px;
                     border-radius: 50%;
@@ -24,133 +31,185 @@ class LottoDisplay extends HTMLElement {
                     align-items: center;
                     font-size: 1.4rem;
                     font-weight: 700;
-                    color: white;
-                    background: rgba(255, 255, 255, 0.1);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                    color: #0d0d0d; /* Dark text for contrast */
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 -5px 10px rgba(0,0,0,0.1);
                     opacity: 0;
-                    transform: scale(0.5);
-                    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                    transform: translateY(20px) scale(0.8);
+                    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                    position: relative;
+                    overflow: hidden;
                 }
-                
                 @keyframes popIn {
                     to {
                         opacity: 1;
-                        transform: scale(1);
+                        transform: translateY(0) scale(1);
                     }
                 }
-
-                .shuffling {
-                    animation: shake 0.1s infinite;
-                }
-
-                @keyframes shake {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-2px); }
+                .shine {
+                    position: absolute;
+                    top: 5%;
+                    left: 15%;
+                    width: 70%;
+                    height: 40%;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.6);
+                    filter: blur(5px);
+                    transform: rotate(20deg);
                 }
             </style>
             <div class="lotto-numbers"></div>
         `;
     }
 
-    async displayNumbers(numbers) {
+    displayNumbers(numbers = []) {
         const container = this.shadowRoot.querySelector('.lotto-numbers');
         container.innerHTML = '';
-        
-        // Create placeholders
-        const slots = [];
-        for (let i = 0; i < 6; i++) {
-            const circle = document.createElement('div');
-            circle.className = 'lotto-number';
-            circle.style.animationDelay = `${i * 0.1}s`;
-            container.appendChild(circle);
-            slots.push(circle);
-        }
+        numbers.forEach((num, index) => {
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            ball.style.animationDelay = `${index * 100}ms`;
+            ball.style.background = this.getColorForNumber(num);
+            
+            const numberSpan = document.createElement('span');
+            numberSpan.textContent = num;
 
-        // Shuffle effect
-        for (let step = 0; step < 10; step++) {
-            slots.forEach(slot => {
-                slot.textContent = Math.floor(Math.random() * 45) + 1;
-                slot.classList.add('shuffling');
-            });
-            await new Promise(r => setTimeout(r, 50));
-        }
+            const shine = document.createElement('div');
+            shine.className = 'shine';
 
-        // Set final numbers
-        slots.forEach((slot, i) => {
-            slot.classList.remove('shuffling');
-            slot.textContent = numbers[i];
-            slot.style.background = this.getColorForNumber(numbers[i]);
+            ball.appendChild(numberSpan);
+            ball.appendChild(shine);
+            container.appendChild(ball);
         });
     }
 
     getColorForNumber(num) {
-        if (num <= 10) return 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'; // Yellow
-        if (num <= 20) return 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)'; // Blue
-        if (num <= 30) return 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)'; // Red
-        if (num <= 40) return 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'; // Gray
-        return 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'; // Green
+        if (num <= 10) return 'linear-gradient(135deg, #FFD700, #FFA500)'; // Gold/Orange
+        if (num <= 20) return 'linear-gradient(135deg, #87CEEB, #4682B4)'; // SkyBlue/SteelBlue
+        if (num <= 30) return 'linear-gradient(135deg, #FF6B6B, #FF0000)'; // LightRed/Red
+        if (num <= 40) return 'linear-gradient(135deg, #A9A9A9, #696969)'; // DarkGray/DimGray
+        return 'linear-gradient(135deg, #90EE90, #2E8B57)'; // LightGreen/SeaGreen
     }
 }
+customElements.define('lotto-board', LottoBoard);
 
-customElements.define('lotto-display', LottoDisplay);
 
-const historyList = document.getElementById('history-list');
-const historyContainer = document.getElementById('history-container');
-const generatorBtn = document.getElementById('generator-btn');
-const clearHistoryBtn = document.getElementById('clear-history');
+/**
+ * Main Application Logic
+ */
 
-generatorBtn.addEventListener('click', async () => {
-    generatorBtn.disabled = true;
-    generatorBtn.textContent = 'Generating...';
+document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const lottoBoard = document.querySelector('lotto-board');
+    const oddEvenChart = document.getElementById('odd-even-chart');
+    const sumRangeChart = document.getElementById('sum-range-chart');
+    const probabilityValue = document.getElementById('probability-value');
+    const historyList = document.getElementById('history-list');
+    const historyPanel = document.getElementById('history-panel');
+    const showHistoryBtn = document.getElementById('show-history');
+    const clearHistoryBtn = document.getElementById('clear-history');
+    const patternType = document.getElementById('pattern-type');
+
+    // --- Real Statistical Data Processing ---
+    const allNumbers = winningNumbersData.flatMap(draw => draw[1]);
+    const numberFrequencies = allNumbers.reduce((acc, num) => {
+        acc[num] = (acc[num] || 0) + 1;
+        return acc;
+    }, {});
     
-    const lottoDisplay = document.querySelector('lotto-display');
-    const numbers = generateLottoNumbers();
-    
-    await lottoDisplay.displayNumbers(numbers);
-    
-    addToHistory(numbers);
-    
-    generatorBtn.disabled = false;
-    generatorBtn.textContent = 'Generate Numbers';
-});
+    const firstDraw = winningNumbersData[winningNumbersData.length - 1][0];
+    const lastDraw = winningNumbersData[0][0];
+    patternType.textContent = `${firstDraw}회 ~ ${lastDraw}회`;
+    probabilityValue.textContent = `${allNumbers.length}개`;
 
-clearHistoryBtn.addEventListener('click', () => {
-    historyList.innerHTML = '';
-    historyContainer.classList.add('hidden');
-    localStorage.removeItem('lottoHistory');
-});
+    // --- Core Functions ---
 
-function generateLottoNumbers() {
-    const numbers = new Set();
-    while (numbers.size < 6) {
-        numbers.add(Math.floor(Math.random() * 45) + 1);
+    /**
+     * Generates lotto numbers based on weighted frequencies from real data.
+     * @returns {number[]} A sorted array of 6 unique lotto numbers.
+     */
+    function generateWeightedLottoNumbers() {
+        const weightedList = [];
+        for (const num in numberFrequencies) {
+            // The weight is the frequency of the number
+            const weight = numberFrequencies[num];
+            for (let i = 0; i < weight; i++) {
+                weightedList.push(parseInt(num));
+            }
+        }
+
+        const selectedNumbers = new Set();
+        while (selectedNumbers.size < 6) {
+            const randomIndex = Math.floor(Math.random() * weightedList.length);
+            selectedNumbers.add(weightedList[randomIndex]);
+        }
+
+        return Array.from(selectedNumbers).sort((a, b) => a - b);
     }
-    return Array.from(numbers).sort((a, b) => a - b);
-}
 
-function addToHistory(numbers) {
-    historyContainer.classList.remove('hidden');
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    li.innerHTML = numbers.map(n => `<span>${n}</span>`).join('');
-    
-    if (historyList.firstChild) {
-        historyList.insertBefore(li, historyList.firstChild);
-    } else {
-        historyList.appendChild(li);
-    }
-    
-    // Save to local storage
-    const history = JSON.parse(localStorage.getItem('lottoHistory') || '[]');
-    history.unshift(numbers);
-    localStorage.setItem('lottoHistory', JSON.stringify(history.slice(0, 10)));
-}
+    /**
+     * Updates the mini-charts with analysis results.
+     * @param {number[]} numbers - The array of generated lotto numbers.
+     */
+    function updateAnalysis(numbers) {
+        // Odd/Even analysis
+        const oddCount = numbers.filter(n => n % 2 !== 0).length;
+        oddEvenChart.textContent = `홀 ${oddCount} : 짝 ${6 - oddCount}`;
 
-// Load history on start
-window.addEventListener('DOMContentLoaded', () => {
-    const history = JSON.parse(localStorage.getItem('lottoHistory') || '[]');
-    if (history.length > 0) {
-        history.reverse().forEach(nums => addToHistory(nums));
+        // Sum analysis
+        const sum = numbers.reduce((acc, n) => acc + n, 0);
+        sumRangeChart.textContent = `총합 ${sum}`;
     }
+
+    // --- Event Listeners ---
+
+    analyzeBtn.addEventListener('click', () => {
+        analyzeBtn.disabled = true;
+        analyzeBtn.querySelector('.btn-text').textContent = '번호 추출 중...';
+        lottoBoard.displayNumbers([]); // Clear previous numbers
+
+        setTimeout(() => {
+            const numbers = generateWeightedLottoNumbers();
+            lottoBoard.displayNumbers(numbers);
+            updateAnalysis(numbers);
+            saveToHistory(numbers);
+
+            analyzeBtn.disabled = false;
+            analyzeBtn.querySelector('.btn-text').textContent = '최적의 번호 조합 추출';
+        }, 1000); // Simulate analysis time
+    });
+
+    showHistoryBtn.addEventListener('click', () => {
+        historyPanel.classList.toggle('hidden');
+    });
+
+    clearHistoryBtn.addEventListener('click', () => {
+        historyList.innerHTML = '';
+        localStorage.removeItem('lottoHistory');
+        historyPanel.classList.add('hidden');
+    });
+
+    // --- History Management ---
+
+    function saveToHistory(numbers) {
+        let history = JSON.parse(localStorage.getItem('lottoHistory')) || [];
+        history.unshift(numbers);
+        if (history.length > 10) history = history.slice(0, 10);
+        localStorage.setItem('lottoHistory', JSON.stringify(history));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        historyList.innerHTML = '';
+        const history = JSON.parse(localStorage.getItem('lottoHistory')) || [];
+        history.forEach(numbers => {
+            const li = document.createElement('li');
+            li.textContent = numbers.join(', ');
+            historyList.appendChild(li);
+        });
+    }
+
+    // --- Initial Load ---
+    lottoBoard.displayNumbers();
+    renderHistory();
 });

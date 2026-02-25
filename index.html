@@ -1,28 +1,74 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotto Number Generator</title>
+    <title>AI 통계 기반 로또 번호 추출기</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Lotto Number Generator</h1>
-        <p class="subtitle">Your lucky numbers are just a click away</p>
-        <lotto-display aria-live="polite"></lotto-display>
-        <button id="generator-btn">Generate Numbers</button>
-        
-        <div id="history-container" class="hidden">
-            <h3>Previous Numbers</h3>
-            <ul id="history-list"></ul>
-            <button id="clear-history">Clear History</button>
-        </div>
+    <div class="app-container">
+        <header>
+            <div class="badge">LOTTO 6/45</div>
+            <h1>1회~1212회 빅데이터 분석 <br><span class="highlight">1등 당첨 확률 예측</span></h1>
+            <p class="subtitle">과거 1등부터 5등까지의 당첨 번호 통계를 기반으로 최적의 조합을 생성합니다.</p>
+        </header>
+
+        <main>
+            <section class="analysis-status">
+                <div class="status-item">
+                    <span class="label">분석 데이터</span>
+                    <span class="value" id="pattern-type">1회 ~ 1212회</span>
+                </div>
+                <div class="status-divider"></div>
+                <div class="status-item">
+                    <span class="label">총 분석 번호</span>
+                    <span class="value" id="probability-value">???</span>
+                </div>
+            </section>
+
+            <div class="display-wrapper">
+                <lotto-board aria-live="polite"></lotto-board>
+            </div>
+
+            <div class="action-area">
+                <button id="analyze-btn" class="primary-btn">
+                    <span class="btn-icon">⚡</span>
+                    <span class="btn-text">최적의 번호 조합 추출</span>
+                </button>
+            </div>
+
+            <section class="insights" id="insights-panel">
+                <div class="insight-card">
+                    <h4>홀짝 비율 분석</h4>
+                    <div class="chart-mini" id="odd-even-chart">분석 전</div>
+                </div>
+                <div class="insight-card">
+                    <h4>총합 구간 분석</h4>
+                    <div class="chart-mini" id="sum-range-chart">분석 전</div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="history-toggle" id="show-history">기존 추출 번호 내역 확인 ▾</div>
+            <div id="history-panel" class="hidden">
+                <ul id="history-list"></ul>
+                <button id="clear-history">내역 초기화</button>
+            </div>
+        </footer>
     </div>
-    <script src="main.js"></script>
+    
+    <template id="lotto-ball-template">
+        <div class="ball">
+            <span class="number"></span>
+            <div class="shine"></div>
+        </div>
+    </template>
+
+    <script src="main.js" type="module"></script>
 </body>
 </html>

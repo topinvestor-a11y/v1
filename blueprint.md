@@ -1,38 +1,26 @@
-# Lotto Number Generator
+# AI-Powered Lotto Number Analyzer & Generator
 
-## Overview
+## **Project Overview**
 
-A simple, visually appealing web application to generate random lottery numbers. The application will be built using modern web standards, including Web Components for the number display.
+This project is an advanced lottery number analyzer and generator designed for the South Korean "Lotto 6/45". It leverages statistical analysis of historical draw data to provide users with number combinations that have a higher probability of winning.
 
-## Project Outline
+## **Core Features**
 
-### Style and Design
+- **Statistical Analysis Engine:** Analyzes the frequency of 1st, 2nd, 3rd, 4th, and 5th place winning numbers from historical draws (1 to 1212) to identify patterns.
+- **Optimal Combination Generation:** Uses the statistical analysis to generate and recommend lottery number combinations.
+- **Premium & Modern UI:**
+  - Dark, energetic aesthetic using modern CSS (`oklch` colors, gradients).
+  - Multi-layered drop shadows and subtle noise textures for a premium, tactile feel.
+  - Interactive and animated "Lotto Ball" components for a dynamic user experience.
+  - Fully responsive design for both mobile and desktop.
+- **Technology:** Built with modern, framework-less web standards including Web Components, CSS Container Queries, and ES Modules.
+- **Localization:** Native Korean language and context.
 
-*   **Layout:** A centered, single-column layout.
-*   **Color Palette:** A vibrant and energetic color palette with gradients.
-*   **Typography:** Clear and readable fonts, with a large, prominent title.
-*   **Visual Effects:**
-    *   Subtle noise texture for the background.
-    *   Drop shadows on the main container to create depth.
-    *   "Glow" effect on the button.
-    *   The generated numbers will be displayed in styled circles.
-*   **Responsiveness:** The layout will adapt to different screen sizes.
+## **Current Task: Project Reframing**
 
-### Features
+**Objective:** Refocus the application from a "1212th Draw Analyzer" to a "Statistical Lotto Extractor" based on historical data from draws 1 through 1212.
 
-*   **Number Generation:** Generate 6 unique random numbers between 1 and 45.
-*   **Display:** Display the generated numbers in a clear and attractive format.
-*   **User Interaction:** A single button to trigger the number generation.
-*   **Web Component:** A custom `<lotto-display>` element to encapsulate the number display logic and styling.
-
-## Current Task: Completed ✅
-
-1.  **Initial Implementation:** Basic structure and logic implemented.
-2.  **Enhancements (Phase 2):**
-    *   Added sequenced "pop" animations for numbers.
-    *   Implemented a shuffling effect before revealing results.
-    *   Upgraded styling to a modern "Dark Glassmorphism" aesthetic with Poppins font.
-    *   Added a persistent "History" section with LocalStorage.
-    *   Improved button interactivity and tactile feedback.
-    *   Added `aria-live` for better accessibility.
-
+**Plan:**
+1.  **Update `blueprint.md`:** Modify the project overview and features to reflect the new statistical focus. (Done)
+2.  **Update `index.html`:** Change all user-facing text (titles, headers, button labels) to align with the new functionality.
+3.  **Update `main.js`:** Remove any logic specific to the 1212th draw and prepare the script for implementing the new statistical analysis engine.
